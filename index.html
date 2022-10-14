@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        #timer{
+            width:500px;
+            height:300px;
+            margin:100px auto 0;
+            background-color: orange;
+            text-align:center;
+            font-size:60px;
+            color:white;
+            line-height:300px;
+        }
+        #setter{
+            width:400px;
+            background-color: #bfa;
+            border:3px pink solid;
+            padding:10px;
+            margin:20px auto;
+        }
+    </style>
+</head>
+<body>
+    <div>
+        <h2 id="timer"></h2>
+        <div id="setter"> 
+            时：<input type="number"><br>
+            分：<input type="number"><br>
+            秒：<input type="number"><br>
+            <br>
+            <button onClick="setTimer()">开始计时</button>
+            <button onClick="quitTimer()">暂停计时</button>
+            <button onClick="continueTimer()">继续计时</button>
+            <button onClick="clearTimer()">清除计时</button>
+        </div>
+    </div>
+    <script>
+        // 设置定时器
+        let interval;
+        let isOn;
+        // 获取格式化字符串
+        function getTime(hour,minute,second){
+            if(hour < 10){
+                hour = '0'+ hour
+            }
+            if(minute < 10){
+                minute = '0' + minute
+            }
+            if(second < 10){
+                second = '0' + second
+            }
+            return hour + ':' + minute + ':' + second
+        }
+        // 获取本地存储的时间
+        function getLocalTime(){
+            const timeStr = JSON.parse(localStorage.getItem('selfDefined-timer')) || getTime(0,0,0);
+            const timeArr = timeStr.split(':')
+            hour = Number(timeArr[0])
+            minute = Number(timeArr[1])
+            second = Number(timeArr[2])
+            return [hour,minute,second]
+        }
+        // 动态修改时间
+        function saveTimer(str){
+            localStorage.setItem('selfDefined-timer',JSON.stringify(str))
+        }
+        // 动态展示页面信息
+        function showTime(){
+            isOn = 1
+            const timer = document.getElementById('timer')
+
+            // 初始化页面，避免页面初始无数据
+            const timeArrInitial = getLocalTime()
+            hour = timeArrInitial[0]
+            minute = timeArrInitial[1]
+            second = timeArrInitial[2]
+            timer.innerHTML = getTime(hour,minute,second)
+
+            interval = setInterval(()=>{
+
+
+                const timeArr = getLocalTime()
+                hour = timeArr[0]
+                minute = timeArr[1]
+                second = timeArr[2]
+
+                if(!(hour == 0 && minute == 0 && second == 0)){
+                    second--
+                    if(second < 0 ){
+                        minute --
+                        second = 59
+                        if(minute < 0 ){
+                            hour --
+                            minute = 59
+                        }
+                    }
+                }
+                const timeShow = getTime(hour,minute,second)
+                saveTimer(timeShow)
+                timer.innerHTML = timeShow
+            },1000)
+        }
+        // 动态设置时间
+        function setTimer(){
+            const inputs = document.querySelectorAll('#setter > input')
+            const hour = Number(inputs[0].value)
+            const minute = Number(inputs[1].value)
+            const second = Number(inputs[2].value)
+            if(hour < 0 || minute < 0 || second < 0) return alert('输入错误');
+            if(hour > 100 || minute > 59 || second >59) return alert('输入错误');
+            saveTimer(getTime(hour,minute,second))
+        }
+        // 暂停计数器
+        function quitTimer(){
+            isOn = 0;
+            clearInterval(interval)
+        }
+        // 继续计时
+        function continueTimer(){
+            if(isOn) return ;
+            showTime()
+        }
+        // 清除计时
+        function clearTimer(){
+            saveTimer(getTime(0,0,0))
+        }
+        showTime();
+        isOn = 1;
+    </script>
+</body>
+</html>
